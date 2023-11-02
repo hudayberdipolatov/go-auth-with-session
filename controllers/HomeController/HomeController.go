@@ -19,6 +19,7 @@ func (home HomeController) Index(w http.ResponseWriter, r *http.Request) {
 		} else {
 			data := map[string]interface{}{
 				"user_fullName": session.Values["FullName"],
+				"user_auth":     session.Values["loggedIn"],
 			}
 			view, _ := template.ParseFiles("views/Home/index.html")
 			_ = view.Execute(w, data)

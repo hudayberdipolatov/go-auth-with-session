@@ -36,4 +36,5 @@ func ConnectDataBase() {
 	}
 	// database migration
 	DB.AutoMigrate()
+
 }

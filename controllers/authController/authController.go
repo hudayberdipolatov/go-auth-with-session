@@ -17,6 +17,14 @@ type LoginInput struct {
 	Password string
 }
 
+type RegisterInput struct {
+	Username        string
+	FullName        string
+	Email           string
+	Password        string
+	ConfirmPassword string
+}
+
 var userModel models.Users
 
 func (auth AuthController) RegisterPage(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +36,66 @@ func (auth AuthController) RegisterPage(w http.ResponseWriter, r *http.Request) 
 	_ = view.Execute(w, nil)
 }
 func (auth AuthController) Register(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	registerInput := RegisterInput{
+		Username:        r.PostForm.Get("username"),
+		FullName:        r.PostForm.Get("full_name"),
+		Email:           r.PostForm.Get("email"),
+		Password:        r.PostForm.Get("password"),
+		ConfirmPassword: r.PostForm.Get("confirm_password"),
+	}
+	errorMessages := make(map[string]interface{})
+	if registerInput.Username == "" {
+		errorMessages["username_validate"] = "Username hökmany"
+	}
+	if registerInput.FullName == "" {
+		errorMessages["FullName_validate"] = "FullName hökmany"
+	}
+	if registerInput.Email == "" {
+		errorMessages["email_validate"] = "Email hökmany"
+	}
+	if registerInput.Password == "" {
+		errorMessages["password_validate"] = "Password hökmany"
+	}
+	if registerInput.ConfirmPassword == "" {
+		errorMessages["ConfirmPassword_validate"] = "Confirm Password hökmany"
+	} else {
+		if registerInput.Password != registerInput.ConfirmPassword {
+			errorMessages["ConfirmPassword_validate"] = "Password-lar biri-birine gabat gelenok!!!"
+		}
+	}
 
+	if len(errorMessages) > 0 {
+		data := map[string]interface{}{
+			"validation": errorMessages,
+		}
+		//log.Fatal(errorMessages)
+		view, _ := template.ParseFiles("views/auth/register.html")
+		_ = view.Execute(w, data)
+	} else {
+
+		getUser := userModel.GetUser(registerInput.Username)
+		if getUser.ID == 0 {
+			hashPassword, _ := bcrypt.GenerateFromPassword([]byte(registerInput.Password), bcrypt.DefaultCost)
+			password := string(hashPassword)
+			models.Users{
+				Username: registerInput.Username,
+				FullName: registerInput.FullName,
+				Email:    registerInput.Email,
+				Password: password,
+			}.CreateUser()
+			data := make(map[string]interface{})
+			data["success"] = "Registered Successfully!!! Ulgama girip bilersiňiz!!!"
+			view, _ := template.ParseFiles("views/auth/login.html")
+			_ = view.Execute(w, data)
+		} else {
+			data := make(map[string]interface{})
+			data["user_exists"] = registerInput.Username + " ulanyjy ady öň hem ulanylýar!!!"
+			view, _ := template.ParseFiles("views/auth/register.html")
+			_ = view.Execute(w, data)
+		}
+
+	}
 }
 
 func (auth AuthController) LoginPage(w http.ResponseWriter, r *http.Request) {

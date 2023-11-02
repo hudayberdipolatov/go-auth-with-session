@@ -17,8 +17,11 @@ func (home HomeController) Index(w http.ResponseWriter, r *http.Request) {
 		if session.Values["loggedIn"] != true {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 		} else {
+			data := map[string]interface{}{
+				"user_fullName": session.Values["FullName"],
+			}
 			view, _ := template.ParseFiles("views/Home/index.html")
-			_ = view.Execute(w, nil)
+			_ = view.Execute(w, data)
 		}
 	}
 

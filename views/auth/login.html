@@ -42,6 +42,13 @@
                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                </div>
            {{end}}
+
+           {{if .success }}
+               <div class="alert alert-success alert-dismissible fade show" role="alert">
+                   {{.success}}
+                   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+               </div>
+           {{end}}
            <hr>
            <form action="/login" method="post">
                <div class="mb-2">

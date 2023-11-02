@@ -2,12 +2,17 @@ package authController
 
 import (
 	"errors"
+	"github.com/go-playground/locales/en"
+	ut "github.com/go-playground/universal-translator"
+	"github.com/go-playground/validator/v10"
+	en_translations "github.com/go-playground/validator/v10/translations/en"
 	"github.com/hudayberdipolatov/go-auth-with-session/helpers/authsession"
 	"github.com/hudayberdipolatov/go-auth-with-session/models"
 	"golang.org/x/crypto/bcrypt"
 	"html/template"
 	"log"
 	"net/http"
+	"reflect"
 )
 
 type AuthController struct{}
@@ -18,11 +23,11 @@ type LoginInput struct {
 }
 
 type RegisterInput struct {
-	Username        string
-	FullName        string
-	Email           string
-	Password        string
-	ConfirmPassword string
+	Username        string `validate:"required,gte=3" label:"Username"`
+	FullName        string `validate:"required,gte=3" label:"Full name"`
+	Email           string `validate:"required,email" label:"Email"`
+	Password        string `validate:"required,gte=4" label:"Password"`
+	ConfirmPassword string `validate:"required,eqfield=Password" label:"Confirm Password"`
 }
 
 var userModel models.Users
@@ -44,36 +49,94 @@ func (auth AuthController) Register(w http.ResponseWriter, r *http.Request) {
 		Password:        r.PostForm.Get("password"),
 		ConfirmPassword: r.PostForm.Get("confirm_password"),
 	}
-	errorMessages := make(map[string]interface{})
-	if registerInput.Username == "" {
-		errorMessages["username_validate"] = "Username hökmany"
-	}
-	if registerInput.FullName == "" {
-		errorMessages["FullName_validate"] = "FullName hökmany"
-	}
-	if registerInput.Email == "" {
-		errorMessages["email_validate"] = "Email hökmany"
-	}
-	if registerInput.Password == "" {
-		errorMessages["password_validate"] = "Password hökmany"
-	}
-	if registerInput.ConfirmPassword == "" {
-		errorMessages["ConfirmPassword_validate"] = "Confirm Password hökmany"
-	} else {
-		if registerInput.Password != registerInput.ConfirmPassword {
-			errorMessages["ConfirmPassword_validate"] = "Password-lar biri-birine gabat gelenok!!!"
-		}
-	}
+	//errorMessages := make(map[string]interface{})
+	//if registerInput.Username == "" {
+	//	errorMessages["username_validate"] = "Username hökmany"
+	//}
+	//if registerInput.FullName == "" {
+	//	errorMessages["FullName_validate"] = "FullName hökmany"
+	//}
+	//if registerInput.Email == "" {
+	//	errorMessages["email_validate"] = "Email hökmany"
+	//}
+	//if registerInput.Password == "" {
+	//	errorMessages["password_validate"] = "Password hökmany"
+	//}
+	//if registerInput.ConfirmPassword == "" {
+	//	errorMessages["ConfirmPassword_validate"] = "Confirm Password hökmany"
+	//} else {
+	//	if registerInput.Password != registerInput.ConfirmPassword {
+	//		errorMessages["ConfirmPassword_validate"] = "Password-lar biri-birine gabat gelenok!!!"
+	//	}
+	//}
+	//
+	//if len(errorMessages) > 0 {
+	//	data := map[string]interface{}{
+	//		"validation": errorMessages,
+	//	}
+	//	//log.Fatal(errorMessages)
+	//	view, _ := template.ParseFiles("views/auth/register.html")
+	//	_ = view.Execute(w, data)
+	//} else {
+	//
+	//	getUser := userModel.GetUser(registerInput.Username)
+	//	if getUser.ID == 0 {
+	//		hashPassword, _ := bcrypt.GenerateFromPassword([]byte(registerInput.Password), bcrypt.DefaultCost)
+	//		password := string(hashPassword)
+	//		models.Users{
+	//			Username: registerInput.Username,
+	//			FullName: registerInput.FullName,
+	//			Email:    registerInput.Email,
+	//			Password: password,
+	//		}.CreateUser()
+	//		data := make(map[string]interface{})
+	//		data["success"] = "Registered Successfully!!! Ulgama girip bilersiňiz!!!"
+	//		view, _ := template.ParseFiles("views/auth/login.html")
+	//		_ = view.Execute(w, data)
+	//	} else {
+	//		data := make(map[string]interface{})
+	//		data["user_exists"] = registerInput.Username + " ulanyjy ady öň hem ulanylýar!!!"
+	//		view, _ := template.ParseFiles("views/auth/register.html")
+	//		_ = view.Execute(w, data)
+	//	}
+	//
+	//}
 
-	if len(errorMessages) > 0 {
+	translator := en.New()
+	uni := ut.New(translator, translator)
+	trans, _ := uni.GetTranslator("en")
+
+	validate := validator.New()
+	// register default translation (en)
+	en_translations.RegisterDefaultTranslations(validate, trans)
+
+	validate.RegisterTagNameFunc(func(field reflect.StructField) string {
+		labelName := field.Tag.Get("label")
+		return labelName
+	})
+	validate.RegisterTranslation("required", trans, func(ut ut.Translator) error {
+		return ut.Add("required", "{0} meýdany hökmany", true)
+	}, func(ut ut.Translator, fe validator.FieldError) string {
+		t, _ := ut.T("required", fe.Field())
+		return t
+	})
+
+	validateErrors := validate.Struct(registerInput)
+	errorMessages := make(map[string]interface{})
+
+	if validateErrors != nil {
+		for _, e := range validateErrors.(validator.ValidationErrors) {
+			errorMessages[e.StructField()] = e.Translate(trans)
+
+		}
+		//fmt.Println(errorMessages)
 		data := map[string]interface{}{
 			"validation": errorMessages,
+			"user":       registerInput,
 		}
-		//log.Fatal(errorMessages)
 		view, _ := template.ParseFiles("views/auth/register.html")
 		_ = view.Execute(w, data)
 	} else {
-
 		getUser := userModel.GetUser(registerInput.Username)
 		if getUser.ID == 0 {
 			hashPassword, _ := bcrypt.GenerateFromPassword([]byte(registerInput.Password), bcrypt.DefaultCost)
@@ -85,16 +148,16 @@ func (auth AuthController) Register(w http.ResponseWriter, r *http.Request) {
 				Password: password,
 			}.CreateUser()
 			data := make(map[string]interface{})
-			data["success"] = "Registered Successfully!!! Ulgama girip bilersiňiz!!!"
+			data["success"] = "Register Successfully!!! Ulgama girip bilersiňiz!!!"
 			view, _ := template.ParseFiles("views/auth/login.html")
 			_ = view.Execute(w, data)
 		} else {
 			data := make(map[string]interface{})
 			data["user_exists"] = registerInput.Username + " ulanyjy ady öň hem ulanylýar!!!"
+			data["user"] = registerInput
 			view, _ := template.ParseFiles("views/auth/register.html")
 			_ = view.Execute(w, data)
 		}
-
 	}
 }
 

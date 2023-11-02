@@ -47,37 +47,37 @@
     <form method="post" action="/register">
         <div class="mb-2">
             <label for="username" class="mb-2" style="font-size: 18px;">Username</label>
-            <input type="text" name="username" id="username" class="form-control rounded-0 {{if .validation.username_validate }} is-invalid {{end}} " placeholder="Username...">
-            {{if .validation.username_validate}}
-            <span class="text-danger" style="margin-left: 1%;">{{.validation.username_validate}}</span>
+            <input type="text" name="username" value="{{.user.Username}}" id="username" class="form-control rounded-0 {{if .validation.Username }} is-invalid {{end}} " placeholder="Username...">
+            {{if .validation.Username}}
+            <span class="text-danger" style="margin-left: 1%;">{{.validation.Username}}</span>
             {{end}}
         </div>
         <div class="mb-2">
             <label for="full_name" class="mb-2" style="font-size: 18px;">Full name</label>
-            <input type="text" id="full_name" name="full_name" class="form-control rounded-0 {{if .validation.FullName_validate }} is-invalid {{end}}" placeholder="Full name...">
-            {{if .validation.FullName_validate}}
-                <span class="text-danger" style="margin-left: 1%;">{{.validation.FullName_validate}}</span>
+            <input type="text" id="full_name"  value="{{.user.FullName}}" name="full_name" class="form-control rounded-0 {{if .validation.FullName }} is-invalid {{end}}" placeholder="Full name...">
+            {{if .validation.FullName}}
+                <span class="text-danger" style="margin-left: 1%;">{{.validation.FullName}}</span>
             {{end}}
         </div>
         <div class="mb-2">
             <label for="email" class="mb-2" style="font-size: 18px;">Email</label>
-            <input type="email" id="email" name="email" class="form-control rounded-0  {{if .validation.email_validate }} is-invalid {{end}}" placeholder="Email...">
-            {{if .validation.email_validate}}
-                <span class="text-danger" style="margin-left: 1%;">{{.validation.email_validate}}</span>
+            <input type="email" id="email" name="email" value="{{.user.Email}}" class="form-control rounded-0  {{if .validation.Email }} is-invalid {{end}}" placeholder="Email...">
+            {{if .validation.Email}}
+                <span class="text-danger" style="margin-left: 1%;">{{.validation.Email}}</span>
             {{end}}
         </div>
         <div class="mb-2">
             <label for="password" class="mb-2" style="font-size: 18px;">Password</label>
-            <input type="password" id="password" name="password" class="form-control rounded-0  {{if .validation.password_validate }} is-invalid {{end}}" placeholder="Password...">
-            {{if .validation.password_validate}}
-                <span class="text-danger" style="margin-left: 1%;">{{.validation.password_validate}}</span>
+            <input type="password" id="password" name="password"  class="form-control rounded-0  {{if .validation.Password }} is-invalid {{end}}" placeholder="Password...">
+            {{if .validation.Password}}
+                <span class="text-danger" style="margin-left: 1%;">{{.validation.Password}}</span>
             {{end}}
         </div>
         <div class="mb-2">
             <label  for="password" class="mb-2" style="font-size: 18px;">Confirm Password</label>
-            <input  type="password" id="password" name="confirm_password" class="form-control rounded-0 {{if .validation.ConfirmPassword_validate }} is-invalid {{end}}" placeholder="Password...">
-            {{if .validation.ConfirmPassword_validate}}
-                <span class="text-danger" style="margin-left: 1%;">{{.validation.ConfirmPassword_validate}}</span>
+            <input  type="password" id="password" name="confirm_password"   class="form-control rounded-0 {{if .validation.ConfirmPassword }} is-invalid {{end}}" placeholder="Password...">
+            {{if .validation.ConfirmPassword}}
+                <span class="text-danger" style="margin-left: 1%;">{{.validation.ConfirmPassword}}</span>
             {{end}}
         </div>
         <div class="mb-2">

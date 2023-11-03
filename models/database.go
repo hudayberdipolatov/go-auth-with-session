@@ -35,6 +35,6 @@ func ConnectDataBase() {
 		fmt.Println("-----------------------------")
 	}
 	// database migration
-	DB.AutoMigrate()
+	DB.AutoMigrate(Users{})
 
 }
